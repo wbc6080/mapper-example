@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mapper-test
+  namespace: default
+  labels:
+    app: demo
+    version: stable
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: demo
+      version: stable
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: "false"
+      labels:
+        app: demo
+        version: stable
+    spec:
+#      hostNetwork: true
+      nodeName: edge-node
+      containers:
+        - name: demo34
+          volumeMounts:
+            - mountPath: /etc/kubeedge
+              name: test-volume
+          env:
+            - name: TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: mysecret
+                  key: token
+          image: docker.io/library/mygolang:v2.0.1 # 容器使用的镜像地址
+          imagePullPolicy: IfNotPresent
+          resources:
+            limits:
+              cpu: 300m
+              memory: 500Mi
+            requests:
+              cpu: 100m
+              memory: 100Mi
+          command: [ "/bin/sh","-c" ]
+          args: [ "/kubeedge/main --config-file /kubeedge/config.yaml --v 4" ]
+      volumes:
+        - name: test-volume
+          hostPath:
+            path: /etc/kubeedge
+            type: Directory
