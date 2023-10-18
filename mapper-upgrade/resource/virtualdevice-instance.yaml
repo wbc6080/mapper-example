@@ -1,0 +1,94 @@
+apiVersion: devices.kubeedge.io/v1beta1
+kind: Device
+metadata:
+  name: random-instance-01
+  labels:
+    model: random-01
+spec:
+  deviceModelRef:
+    name: random-01
+  protocol:
+    protocolName: virtualProtocol
+    configData:
+      deviceID: 2
+      serialPort: '/dev/ttyS0'
+      baudRate: 9600
+      dataBits: 8
+      parity: even
+      stopBits: 1
+      protocolID: 1
+  nodeName: edge-node
+  properties:
+    - name: random-int
+      #      type:
+      #        int:
+      #          accessMode: ReadWrite
+      #          defaultValue: 100
+      visitors:
+        protocolName: virtualProtocol
+        configData:
+          dataType: 'INT'
+      reportCycle: 10000000000
+      collectCycle: 10000000000
+      reportToCloud: true
+      pushMethod:
+        mqtt:
+          address: tcp://192.168.1.73:1883
+          topic: random-int
+          qos: 0
+          retained: false
+        dbMethod:
+          influxdb2:
+            influxdb2ClientConfig:
+              url: http://192.168.1.73:8086
+              org: test-org
+              bucket: test-bucket
+            influxdb2DataConfig:
+              measurement: stat
+              tag:
+                unit: temperature
+#              tagKey: unit
+#              tagValue: temperature
+              fieldKey: wbctest
+    - name: random-float
+      #      type:
+      #        float:
+      #          accessMode: ReadOnly
+      #          defaultValue: 30
+      visitors:
+        protocolName: virtualProtocol
+        configData:
+          dataType: 'FLOAT'
+      reportCycle: 10000000000
+      collectCycle: 10000000000
+      reportToCloud: true
+      pushMethod:
+        mqtt:
+          address: tcp://192.168.1.73:1883
+          topic: random-float
+          qos: 0
+          retained: false
+status:
+  twins:
+    - propertyName: random-int
+      reported:
+        metadata:
+          timestamp: '1550049403598'
+          type: integer
+        value: "100"
+      observedDesired:
+        metadata:
+          timestamp: '1550049403598'
+          type: integer
+        value: "100"
+    - propertyName: random-float
+      reported:
+        metadata:
+          timestamp: '1550049403598'
+          type: float
+        value: "30"
+      observedDesired:
+        metadata:
+          timestamp: '1550049403598'
+          type: float
+        value: "30"
